@@ -1,0 +1,6 @@
+data/
+db/
+.git/
+scripts/
+build/
+.gitignore

@@ -1,0 +1,16 @@
+FROM docker.io/golang:1.18.3 AS base
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends libvips-dev
+
+COPY . .
+RUN GOOS=linux CGO_ENABLED=1 GOARCH=amd64 go build -o /main /app/cmd/main.go
+
+FROM docker.io/debian:bullseye AS prod
+
+RUN apt-get update -y && apt-get install -y libvips
+
+COPY --from=base /main /main
+
+CMD [ "/main" ]
