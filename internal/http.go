@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -52,7 +51,6 @@ func (kv *KVImg) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			var buf io.Reader = r.Body
 			if r.Header.Get("X-Optimize") == "true" {
 				// TODO: Optimize the buffer image
-				log.Println(r.Header.Get("Content-Type"))
 				data, err := io.ReadAll(buf)
 				if err != nil {
 					w.Header().Set("Error", err.Error())
