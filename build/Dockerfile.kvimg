@@ -5,7 +5,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends libvips-dev
 
 COPY . .
-RUN GOOS=linux CGO_ENABLED=1 GOARCH=amd64 go build -o /main /app/cmd/main.go
+RUN GOOS=linux CGO_ENABLED=1 GOARCH=amd64 go build -o /main /app/cmd/docker/main.go
 
 FROM docker.io/debian:bullseye AS prod
 
