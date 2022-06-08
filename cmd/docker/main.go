@@ -42,8 +42,10 @@ func main() {
 
 	defer db.Close()
 	kvImg := internal.NewKVImg(strings.Split(*servers, ","), db)
-	if err := server(kvImg, *port); err != nil {
-		panic(err)
+	if *action == "server" {
+		if err := server(kvImg, *port); err != nil {
+			panic(err)
+		}
 	}
 }
 
