@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/dc-dc-dc/KVImg/internal"
@@ -19,7 +21,13 @@ func main() {
 	defer db.Close()
 	kvImg := internal.NewKVImg(servers, db)
 	log.SetFlags(log.Ldate | log.LstdFlags)
-	testLocalFile(kvImg)
+	if err := testServer(kvImg); err != nil {
+		panic(err)
+	}
+}
+
+func testServer(kv *internal.KVImg) error {
+	return http.ListenAndServe(fmt.Sprintf(":%d", 3000), kv)
 }
 
 func testLocalFile(KVImg *internal.KVImg) {
