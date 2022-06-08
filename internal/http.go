@@ -1,9 +1,14 @@
 package internal
 
 import (
+	"bytes"
 	"errors"
+	"io"
+	"log"
 	"net/http"
 	"strings"
+
+	"github.com/h2non/bimg"
 )
 
 func (kv *KVImg) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +48,26 @@ func (kv *KVImg) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusLengthRequired)
 				return
 			}
-			if err := kv.UploadFile(key, r.Body, r.ContentLength); err != nil {
+			// Check if header sent to optimize image
+			var buf io.Reader = r.Body
+			if r.Header.Get("X-Optimize") == "true" {
+				// TODO: Optimize the buffer image
+				log.Println(r.Header.Get("Content-Type"))
+				data, err := io.ReadAll(buf)
+				if err != nil {
+					w.Header().Set("Error", err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				res, err := bimg.NewImage(data).Convert(bimg.WEBP)
+				if err != nil {
+					w.Header().Set("Error", err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				buf = bytes.NewReader(res)
+			}
+			if err := kv.UploadFile(key, buf, r.ContentLength); err != nil {
 				w.Header().Set("Error", err.Error())
 				w.WriteHeader(http.StatusInternalServerError)
 				return

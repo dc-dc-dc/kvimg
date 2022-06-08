@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"crypto/md5"
 	"errors"
 	"fmt"
@@ -61,18 +62,18 @@ func (kv *KVImg) UploadFile(key []byte, data io.Reader, length int64) error {
 	}
 	path := keyToPath(key)
 	vols := keyToVol(key, kv.GetServers(), kv.replicas)
-
-	for _, vol := range vols {
-		if _, err := send_put(getId(vol, path), data); err != nil {
+	buf := &bytes.Buffer{}
+	body := io.TeeReader(data, buf)
+	for i, vol := range vols {
+		if i != 0 {
+			body = bytes.NewReader(buf.Bytes())
+		}
+		if _, err := send_put(getId(vol, path), body); err != nil {
 			log.Printf("error while trying to upload to %s", vol)
 		}
 	}
 	rec.Locations = vols
-	hash := md5.New()
-	if _, err := io.Copy(hash, data); err != nil {
-		log.Printf("error while trying to generate the hash")
-	}
-	rec.Hash = fmt.Sprintf("%x", hash.Sum(nil))
+	rec.Hash = fmt.Sprintf("%x", md5.Sum(buf.Bytes()))
 
 	if !kv.SaveImgRecord(key, rec) {
 		return ErrUpdatingDB
