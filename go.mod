@@ -1,4 +1,4 @@
-module github.com/dc-dc-dc/kvimg
+module github.com/dc-dc-dc/KVImg
 
 go 1.18
 

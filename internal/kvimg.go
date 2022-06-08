@@ -1,10 +1,20 @@
 package internal
 
-import "github.com/syndtr/goleveldb/leveldb"
+import (
+	"github.com/syndtr/goleveldb/leveldb"
+)
 
 type KVImg struct {
-	servers map[string]interface{}
-	db      *leveldb.DB
+	servers  map[string]interface{}
+	db       *leveldb.DB
+	replicas int
+}
+
+func smallerInt(i, j int) int {
+	if i < j {
+		return i
+	}
+	return j
 }
 
 func NewKVImg(servers []string, db *leveldb.DB) *KVImg {
@@ -14,9 +24,14 @@ func NewKVImg(servers []string, db *leveldb.DB) *KVImg {
 	}
 
 	return &KVImg{
-		servers: _servers,
-		db:      db,
+		servers:  _servers,
+		db:       db,
+		replicas: smallerInt(3, len(_servers)),
 	}
+}
+
+func (kv *KVImg) GetServers() map[string]interface{} {
+	return kv.servers
 }
 
 func (kv *KVImg) RemoveServer(server string) {
